@@ -76,18 +76,6 @@ void setParameters_XOR(uint64_t key_upper, uint64_t key_lower, int seed){
     initialize_mersenne_rng(seed);
 }
 
-// void encrypt_secret_key() {
-//     std::cout << "SECRET_KEY for encryption: " << SECRET_KEY << std::endl;
-//     std::vector<unsigned char> ciphertext = rsa_encrypt_key(SECRET_KEY);
-//     // std::cout << "SECRET_KEY after encryption: " << std::endl;
-//     // for (long unsigned int i = 0; i < ciphertext.size(); ++i) {
-//     //     std::cout << (int)ciphertext[i] << " ";
-//     // }
-//     // std::cout << std::endl;
-//     bit128_t decrypted = rsa_decrypt_key(ciphertext);
-//     std::cout << "SECRET_KEY for decryption: " << decrypted << std::endl;
-// }
-
 void setRSAParameters() { 
     RSA_KEY = generate_rsa_key();
     rsa_set_key(RSA_KEY);
