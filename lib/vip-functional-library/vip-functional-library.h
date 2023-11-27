@@ -6,5 +6,6 @@
 
 
 void  VIPInit();
+void  VIPInit(uint64_t key_upper, uint64_t key_lower, int seed);
 
 #endif

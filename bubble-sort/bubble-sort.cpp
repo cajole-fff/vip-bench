@@ -14,80 +14,75 @@ VIP_ENCINT data[DATASET_SIZE];
 unsigned long swaps = 0;
 
 
-void
-print_data(VIP_ENCINT *data, unsigned size)
-{
-  fprintf(stdout, "DATA DUMP:\n");
-  for (unsigned i=0; i < size; i++)
-    fprintf(stdout, "  data[%u] = %d\n", i, VIP_DEC(data[i]));
+void print_data(VIP_ENCINT *data, unsigned size) {
+    fprintf(stdout, "DATA DUMP:\n");
+    for (unsigned i=0; i < size; i++)
+        fprintf(stdout, "  data[%u] = %d\n", i, VIP_DEC(data[i]));
 }
 
-void
-bubblesort(VIP_ENCINT *data, unsigned size)
-{
-  for (unsigned i=0; i < size-1; i++)
-  {
-#ifndef VIP_DO_MODE
-    bool swapped = false;
-#endif /* !VIP_DO_MODE */
-    for (unsigned j=0; j < size-1; j++)
-    {
-#ifndef VIP_DO_MODE
-      if (data[j] > data[j+1])
-      {
-        VIP_ENCINT tmp = data[j];
-        data[j] = data[j+1];
-        data[j+1] = tmp;
-        swapped = true;
-        swaps++;
-      }
-#else /* VIP_DO_MODE */
-      VIP_ENCBOOL do_swap = data[j] > data[j+1];
-      VIP_ENCINT tmp = data[j];
-      data[j] = VIP_CMOV(do_swap, data[j+1], data[j]);
-      data[j+1] = VIP_CMOV(do_swap, tmp, data[j+1]);
-      swaps++;
-#endif /* VIP_DO_MODE */
+void bubblesort(VIP_ENCINT *data, unsigned size) {
+    for (unsigned i=0; i < size-1; i++) {
+        #ifndef VIP_DO_MODE
+            bool swapped = false;
+        #endif /* !VIP_DO_MODE */
+
+        for (unsigned j=0; j < size-1; j++) {
+            #ifndef VIP_DO_MODE
+                if (data[j] > data[j+1]) {
+                    VIP_ENCINT tmp = data[j];
+                    data[j] = data[j+1];
+                    data[j+1] = tmp;
+                    swapped = true;
+                    swaps++;
+                }
+            #else /* VIP_DO_MODE */
+                VIP_ENCBOOL do_swap = data[j] > data[j+1];
+                VIP_ENCINT tmp = data[j];
+                data[j] = VIP_CMOV(do_swap, data[j+1], data[j]);
+                data[j+1] = VIP_CMOV(do_swap, tmp, data[j+1]);
+                swaps++;
+            #endif /* VIP_DO_MODE */
+        }
+        
+        #ifndef VIP_DO_MODE
+            // done?
+            if (!swapped)
+                break;
+        #endif /* !VIP_DO_MODE */
     }
-#ifndef VIP_DO_MODE
-    // done?
-    if (!swapped)
-      break;
-#endif /* !VIP_DO_MODE */
-  }
 }
 
-int
-main(void)
-{
-  // initialize the privacy enhanced execution target
-  VIP_INIT;
+int main(void) {
+    // initialize the privacy enhanced execution target
+    // In ENC mode, VIP_INIT will generate a random AES128 key, or use the input key if provided
+    // 这里要支持把key传进来
+    // VIP_INIT(0x0505050505050505, 0x0505050505050505, 3022359314);
+    VIP_INIT();
+    VIP_ENC_AES128KEY();
+    VIP_DEC_AES128KEY();
+    // initialize the pseudo-RNG
+    mysrand(42);
+    // mysrand(time(NULL));
 
-  // initialize the pseudo-RNG
-  mysrand(42);
-  // mysrand(time(NULL));
+    // initialize the array to sort
+    for (unsigned i=0; i < DATASET_SIZE; i++)
+        data[i] = myrand();
+    print_data(data, DATASET_SIZE);
 
-  // initialize the array to sort
-  for (unsigned i=0; i < DATASET_SIZE; i++)
-    data[i] = myrand();
-  print_data(data, DATASET_SIZE);
-
-  {
-    Stopwatch s("VIP_Bench Runtime");
-    bubblesort(data, DATASET_SIZE);
-  }
-  print_data(data, DATASET_SIZE);
-
-  // check the array
-  for (unsigned i=0; i < DATASET_SIZE-1; i++)
-  {
-    if (VIP_DEC(data[i]) > VIP_DEC(data[i+1]))
     {
-      fprintf(stdout, "ERROR: data is not properly sorted.\n");
-      return -1;
+        Stopwatch s("VIP_Bench Runtime");
+        bubblesort(data, DATASET_SIZE);
     }
-  }
-  fprintf(stderr, "INFO: %lu swaps executed.\n", swaps);
-  fprintf(stdout, "INFO: data is properly sorted.\n");
-  return 0;
+    print_data(data, DATASET_SIZE);
+
+    // check the array
+    for (unsigned i=0; i < DATASET_SIZE-1; i++) {
+        if (VIP_DEC(data[i]) > VIP_DEC(data[i+1])) {
+            fprintf(stdout, "ERROR: data is not properly sorted.\n");
+            return -1;
+        }
+    }
+    fprintf(stderr, "INFO: %lu swaps executed.\n", swaps);
+    fprintf(stdout, "INFO: data is properly sorted.\n");
+    return 0;
 }

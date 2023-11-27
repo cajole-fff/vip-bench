@@ -76,16 +76,19 @@ void setParameters_XOR(uint64_t key_upper, uint64_t key_lower, int seed){
     initialize_mersenne_rng(seed);
 }
 
-void setRSAParameters() { 
+void setRSAParameters() {
+    fprintf(stderr, "Generating RSA key\n"); 
     RSA_KEY = generate_rsa_key();
     rsa_set_key(RSA_KEY);
 }
 
 void encrypt_aes128_key() {
+    fprintf(stderr, "Encrypting AES128 key\n");
     ENCRYPTED_SECRET_KEY = rsa_encrypt_key(SECRET_KEY);
 }
 
 void decrypt_aes128_key() {
+    fprintf(stderr, "Decrypting AES128 key\n");
     DECRYPTED_SECRET_KEY = rsa_decrypt_key(ENCRYPTED_SECRET_KEY);
     aes128_set_decrypt_key(DECRYPTED_SECRET_KEY);
 }

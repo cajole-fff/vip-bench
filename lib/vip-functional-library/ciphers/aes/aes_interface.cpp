@@ -8,20 +8,26 @@
 struct aes128 ctx_encrypt[1];
 struct aes128 ctx_decrypt[1];
 
-// void aes128_set_key(bit128_t key_pass){
-//     aes128_init(ctx_encrypt, key_pass.value);
-// }
+bool ctx_encrypt_initialized = false;
+bool ctx_decrypt_initialized = false;
 
-void aes128_set_encrypt_key(bit128_t key_pass){
+void aes128_set_encrypt_key(bit128_t key_pass) {
+    fprintf(stderr, "aes128_set_encrypt_key\n");
     aes128_init(ctx_encrypt, key_pass.value);
+    ctx_encrypt_initialized = true;
 }
 
-void aes128_set_decrypt_key(bit128_t key_pass){
+void aes128_set_decrypt_key(bit128_t key_pass) {
+    fprintf(stderr, "aes128_set_decrypt_key\n");
     aes128_init(ctx_decrypt, key_pass.value);
+    ctx_decrypt_initialized = true;
 }
 
 
-bit128_t aes128_encrypt_128(bit128_t plaintext){
+bit128_t aes128_encrypt_128(bit128_t plaintext) {
+    // if (!ctx_encrypt_initialized) {
+    //     throw std::runtime_error("Error: aes128_encrypt_128 called before aes128_set_encrypt_key");
+    // }
     unsigned char ct[AES128_BLOCKLEN] = {0};
     aes128_encrypt(ctx_encrypt, ct, plaintext.value);
 
@@ -30,8 +36,11 @@ bit128_t aes128_encrypt_128(bit128_t plaintext){
 
 
 bit128_t aes128_decrypt_128(bit128_t ciphertext){
+    if (!ctx_decrypt_initialized) {
+        throw std::runtime_error("Error: aes128_decrypt_128 called before aes128_set_decrypt_key");
+    }
     unsigned char pt[AES128_BLOCKLEN] = {0};
-    aes128_decrypt(ctx_encrypt, pt, ciphertext.value);
+    aes128_decrypt(ctx_decrypt, pt, ciphertext.value);
 
     return bit128_t(pt);
 }
