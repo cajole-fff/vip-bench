@@ -18,4 +18,7 @@ void setParameters(SymmCipher cipher, uint64_t key_upper, uint64_t key_lower, in
 void setParameters_XOR(uint64_t key_upper, uint64_t key_lower, int seed);
 
 void setRSAParameters();
+
+void encrypt_aes128_key();
+void decrypt_aes128_key();
 #endif

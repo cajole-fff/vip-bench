@@ -10,7 +10,10 @@
 
 
 
-void aes128_set_key(bit128_t);
+// void aes128_set_key(bit128_t);
+
+void aes128_set_encrypt_key(bit128_t);
+void aes128_set_decrypt_key(bit128_t);
 
 bit128_t aes128_encrypt_128(bit128_t);
 

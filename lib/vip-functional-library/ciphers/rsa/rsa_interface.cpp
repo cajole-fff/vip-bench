@@ -19,7 +19,7 @@ void rsa_set_key(EVP_PKEY *pkey) {
     rsa_init(ctx_rsa, pkey);
 }
 
-void rsa_init(struct rsa_key ctx, EVP_PKEY *pkey) {
+void rsa_init(struct rsa_key& ctx, EVP_PKEY *pkey) {
     if (!pkey) {
         throw std::runtime_error("rsa_init failed. Invalid pkey input.");
         return;
@@ -30,7 +30,6 @@ void rsa_init(struct rsa_key ctx, EVP_PKEY *pkey) {
 
 
 EVP_PKEY *generate_rsa_key() {
-    int bits = 2048; // Length of key in bits
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *pkey_ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
     if (!pkey_ctx) {
@@ -44,7 +43,7 @@ EVP_PKEY *generate_rsa_key() {
         return NULL;
     }
 
-    if (EVP_PKEY_CTX_set_rsa_keygen_bits(pkey_ctx, bits) <= 0) {
+    if (EVP_PKEY_CTX_set_rsa_keygen_bits(pkey_ctx, RSA_KEY_SIZE) <= 0) {
         throw std::runtime_error("EVP_PKEY_CTX_set_rsa_keygen_bits failed.");
         EVP_PKEY_CTX_free(pkey_ctx);
         return NULL;
@@ -62,91 +61,89 @@ EVP_PKEY *generate_rsa_key() {
     return pkey;
 }
 
-
-std::string rsa_encrypt(const std::string& plaintext, EVP_PKEY *public_key) {
-    std::string ciphertext;
+std::vector<unsigned char> rsa_encrypt_128(const bit128_t& plaintext, EVP_PKEY *public_key) {
+    // std::cout << "Encryption Started with key " << public_key << std::endl;
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(public_key, NULL);
-
     if (!ctx) {
-        // 错误处理
-        return "";
+        throw std::runtime_error("Error creating EVP_PKEY_CTX for encryption");
     }
 
     if (EVP_PKEY_encrypt_init(ctx) <= 0) {
-        // 错误处理
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Error initializing encryption");
     }
 
     if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
-        // 错误处理
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Error setting RSA padding");
     }
 
     size_t outlen;
-    // 首先调用一次以获取输出长度
-    if (EVP_PKEY_encrypt(ctx, NULL, &outlen, reinterpret_cast<const unsigned char*>(plaintext.data()), plaintext.size()) <= 0) {
-        // 错误处理
+    if (EVP_PKEY_encrypt(ctx, NULL, &outlen, plaintext.value, sizeof(plaintext.value)) <= 0) {
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Error determining encrypted key length");
     }
 
     std::vector<unsigned char> outbuf(outlen);
-    if (EVP_PKEY_encrypt(ctx, outbuf.data(), &outlen, reinterpret_cast<const unsigned char*>(plaintext.data()), plaintext.size()) <= 0) {
-        // 错误处理
+    if (EVP_PKEY_encrypt(ctx, outbuf.data(), &outlen, plaintext.value, sizeof(plaintext.value)) <= 0) {
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Error encrypting key");
     }
 
-    ciphertext.assign(reinterpret_cast<char*>(outbuf.data()), outlen);
     EVP_PKEY_CTX_free(ctx);
-
-    return ciphertext;
+    // std::cout << "Encryption Finished with key " << public_key << std::endl;
+    return outbuf;
 }
 
-std::string rsa_decrypt(const std::string& ciphertext, EVP_PKEY *private_key) {
-    std::string plaintext;
+bit128_t rsa_decrypt_128(const std::vector<unsigned char>& ciphertext, EVP_PKEY *private_key) {
+    // std::cout << "Decryption Started with key " << private_key << std::endl;
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(private_key, NULL);
-
     if (!ctx) {
-        // 错误处理
-        return "";
+        throw std::runtime_error("Error creating EVP_PKEY_CTX for decryption");
     }
 
     if (EVP_PKEY_decrypt_init(ctx) <= 0) {
-        // 错误处理
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Error initializing decryption");
     }
 
     if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
-        // 错误处理
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Error setting RSA padding for decryption");
     }
 
-    size_t outlen;
-    // 首先调用一次以获取输出长度
-    if (EVP_PKEY_decrypt(ctx, NULL, &outlen, reinterpret_cast<const unsigned char*>(ciphertext.data()), ciphertext.size()) <= 0) {
-        // 错误处理
+    size_t outlen = 256;
+    
+    unsigned char *decrypted_ptr = (unsigned char *)malloc(outlen);
+    if (decrypted_ptr == NULL) {
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        throw std::runtime_error("Failed to allocate memory for decrypted data");
     }
 
-    std::vector<unsigned char> outbuf(outlen);
-    if (EVP_PKEY_decrypt(ctx, outbuf.data(), &outlen, reinterpret_cast<const unsigned char*>(ciphertext.data()), ciphertext.size()) <= 0) {
-        // 错误处理
+    if (EVP_PKEY_decrypt(ctx, decrypted_ptr, &outlen, ciphertext.data(), ciphertext.size()) <= 0) {
+        free(decrypted_ptr);
         EVP_PKEY_CTX_free(ctx);
-        return "";
+        ERR_print_errors_fp(stderr);
+        throw std::runtime_error("Error decrypting key");
     }
 
-    plaintext.assign(reinterpret_cast<char*>(outbuf.data()), outlen);
+    // std::cout << "Decrypted ptr: " << std::hex << (unsigned long long)decrypted_ptr << std::endl;
+
+    bit128_t decrypted;
+    memcpy(decrypted.value, decrypted_ptr, sizeof(decrypted.value));
+    free(decrypted_ptr);
+
     EVP_PKEY_CTX_free(ctx);
-
-    return plaintext;
+    return decrypted;
 }
 
+std::vector<unsigned char> rsa_encrypt_key(const bit128_t& plaintext) {
+    return rsa_encrypt_128(plaintext, ctx_rsa.pkey);
+}
+
+bit128_t rsa_decrypt_key(const std::vector<unsigned char>& ciphertext) {
+    return rsa_decrypt_128(ciphertext, ctx_rsa.pkey);
+}
 
 void save_private_key(EVP_PKEY *pkey, const char *filename) {
     FILE *fp = fopen(filename, "wb");
