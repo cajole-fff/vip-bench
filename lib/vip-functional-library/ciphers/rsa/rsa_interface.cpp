@@ -2,16 +2,15 @@
 #define _RSA_OPENSSL_INTERFACE_CPP
 
 #include <iostream>
-#include <string>
-#include <vector>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
 #include <signal.h>
+#include <string>
+#include <vector>
 
 #include "rsa_interface.h"
-
 
 struct rsa_key ctx_rsa;
 
@@ -19,7 +18,7 @@ void rsa_set_key(EVP_PKEY *pkey) {
     rsa_init(ctx_rsa, pkey);
 }
 
-void rsa_init(struct rsa_key& ctx, EVP_PKEY *pkey) {
+void rsa_init(struct rsa_key &ctx, EVP_PKEY *pkey) {
     if (!pkey) {
         throw std::runtime_error("rsa_init failed. Invalid pkey input.");
         return;
@@ -27,7 +26,6 @@ void rsa_init(struct rsa_key& ctx, EVP_PKEY *pkey) {
 
     ctx.pkey = pkey;
 }
-
 
 EVP_PKEY *generate_rsa_key() {
     EVP_PKEY *pkey = NULL;
@@ -49,20 +47,17 @@ EVP_PKEY *generate_rsa_key() {
         return NULL;
     }
 
-    // Generate keys
     if (EVP_PKEY_keygen(pkey_ctx, &pkey) <= 0) {
         throw std::runtime_error("EVP_PKEY_keygen failed.");
         EVP_PKEY_CTX_free(pkey_ctx);
         return NULL;
     }
 
-    // Clean up
     EVP_PKEY_CTX_free(pkey_ctx);
     return pkey;
 }
 
-std::vector<unsigned char> rsa_encrypt_128(const bit128_t& plaintext, EVP_PKEY *public_key) {
-    // std::cout << "Encryption Started with key " << public_key << std::endl;
+std::vector<unsigned char> rsa_encrypt_128(const bit128_t &plaintext, EVP_PKEY *public_key) {
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(public_key, NULL);
     if (!ctx) {
         throw std::runtime_error("Error creating EVP_PKEY_CTX for encryption");
@@ -91,12 +86,10 @@ std::vector<unsigned char> rsa_encrypt_128(const bit128_t& plaintext, EVP_PKEY *
     }
 
     EVP_PKEY_CTX_free(ctx);
-    // std::cout << "Encryption Finished with key " << public_key << std::endl;
     return outbuf;
 }
 
-bit128_t rsa_decrypt_128(const std::vector<unsigned char>& ciphertext, EVP_PKEY *private_key) {
-    // std::cout << "Decryption Started with key " << private_key << std::endl;
+bit128_t rsa_decrypt_128(const std::vector<unsigned char> &ciphertext, EVP_PKEY *private_key) {
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(private_key, NULL);
     if (!ctx) {
         throw std::runtime_error("Error creating EVP_PKEY_CTX for decryption");
@@ -113,7 +106,7 @@ bit128_t rsa_decrypt_128(const std::vector<unsigned char>& ciphertext, EVP_PKEY 
     }
 
     size_t outlen = 256;
-    
+
     unsigned char *decrypted_ptr = (unsigned char *)malloc(outlen);
     if (decrypted_ptr == NULL) {
         EVP_PKEY_CTX_free(ctx);
@@ -127,8 +120,6 @@ bit128_t rsa_decrypt_128(const std::vector<unsigned char>& ciphertext, EVP_PKEY 
         throw std::runtime_error("Error decrypting key");
     }
 
-    // std::cout << "Decrypted ptr: " << std::hex << (unsigned long long)decrypted_ptr << std::endl;
-
     bit128_t decrypted;
     memcpy(decrypted.value, decrypted_ptr, sizeof(decrypted.value));
     free(decrypted_ptr);
@@ -137,11 +128,11 @@ bit128_t rsa_decrypt_128(const std::vector<unsigned char>& ciphertext, EVP_PKEY 
     return decrypted;
 }
 
-std::vector<unsigned char> rsa_encrypt_key(const bit128_t& plaintext) {
+std::vector<unsigned char> rsa_encrypt_key(const bit128_t &plaintext) {
     return rsa_encrypt_128(plaintext, ctx_rsa.pkey);
 }
 
-bit128_t rsa_decrypt_key(const std::vector<unsigned char>& ciphertext) {
+bit128_t rsa_decrypt_key(const std::vector<unsigned char> &ciphertext) {
     return rsa_decrypt_128(ciphertext, ctx_rsa.pkey);
 }
 
@@ -151,7 +142,7 @@ void save_private_key(EVP_PKEY *pkey, const char *filename) {
         throw std::runtime_error("save_private_key failed. Invalid filename" + std::string(filename) + ".");
         return;
     }
-    
+
     PEM_write_PrivateKey(fp, pkey, NULL, NULL, 0, NULL, NULL);
     fclose(fp);
 }
@@ -166,8 +157,6 @@ void save_public_key(EVP_PKEY *pkey, const char *filename) {
     PEM_write_PUBKEY(fp, pkey);
     fclose(fp);
 }
-
-
 
 // // Just for test
 // int main () {

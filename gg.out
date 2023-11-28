@@ -1,0 +1,12 @@
+Configuring VIP-Bench for VIP functional library...
+ln -sf configs/config.mk.vip config.mk
+ln -sf configs/config.h.vip config.h
+g++ -std=c++11 -Wall -O3 -g -std=c++11 -Wno-comment -maes -Wno-strict-aliasing  -I../common  -DVIP_ENC_MODE -o bubble-sort.o -c bubble-sort.cpp
+g++ -std=c++11 -Wall -O3 -g -std=c++11 -Wno-comment -maes -Wno-strict-aliasing  -I../common  -DVIP_ENC_MODE -o utils.o -c ../common/utils.cpp
+g++ -std=c++11 -Wall -O3 -g -std=c++11 -Wno-comment -maes -Wno-strict-aliasing  -I../common  -o bubble-sort.enc bubble-sort.o utils.o  ../lib/vip-functional-library/vip-functional-library.cpp ../lib/vip-functional-library/interface/interface.cpp ../lib/vip-functional-library/datatypes/enc_impl.cpp ../lib/vip-functional-library/interface/parameters.cpp ../lib/vip-functional-library/rng/rng_interface.cpp ../lib/vip-functional-library/rng/mersenne-twister-1/mersenne-twister.cpp ../lib/vip-functional-library/ciphers/aes/aes_interface.cpp ../lib/vip-functional-library/ciphers/xor/xor_interface.cpp ../lib/vip-functional-library/ciphers/rsa/rsa_interface.cpp -lssl -lcrypto
+g++ -std=c++11 -Wall -O3 -g -std=c++11 -Wno-comment -maes -Wno-strict-aliasing  -I../common  -DVIP_ENC_MODE -o utils.o -c ../common/utils.cpp
+g++ -std=c++11 -Wall -O3 -g -std=c++11 -Wno-comment -maes -Wno-strict-aliasing  -I../common  -o bubble-sort.enc bubble-sort.o utils.o  ../lib/vip-functional-library/vip-functional-library.cpp ../lib/vip-functional-library/interface/interface.cpp ../lib/vip-functional-library/datatypes/enc_impl.cpp ../lib/vip-functional-library/interface/parameters.cpp ../lib/vip-functional-library/rng/rng_interface.cpp ../lib/vip-functional-library/rng/mersenne-twister-1/mersenne-twister.cpp ../lib/vip-functional-library/ciphers/aes/aes_interface.cpp ../lib/vip-functional-library/ciphers/xor/xor_interface.cpp ../lib/vip-functional-library/ciphers/rsa/rsa_interface.cpp -lssl -lcrypto
+./bubble-sort.enc > FOO 
+diff FOO bubble-sort.out
+rm -f FOO
+rm -f bubble-sort.na bubble-sort.do bubble-sort.enc *.o core mem.out *.log FOO 

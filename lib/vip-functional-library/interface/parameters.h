@@ -1,12 +1,13 @@
 #ifndef _PARAMETERS_H
 #define _PARAMETERS_H
-#include <stdlib.h> 
-#include <random>
-#include <bitset>
-#include <string.h>
 #include "bit_t.h"
+#include <bitset>
+#include <random>
+#include <stdlib.h>
+#include <string.h>
 
-enum SymmCipher {AES128, XOR};
+enum SymmCipher { AES128,
+                  XOR };
 
 // Encryption Scheme Parameters
 extern SymmCipher CIPHER;

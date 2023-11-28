@@ -76,9 +76,9 @@
     #include <vector>
     using namespace enc_lib;
 
-    #define VIP_INIT        VIPInit
-    #define VIP_ENC_AES128KEY     encrypt_aes128_key
-    #define VIP_DEC_AES128KEY     decrypt_aes128_key
+    #define VIP_INIT            VIPInit()
+    #define VIP_ENC_AES128KEY   encrypt_aes128_key()
+    #define VIP_DEC_AES128KEY   decrypt_aes128_key()
     #define VIP_ENCCHAR         enc_char
     #define VIP_ENCINT          enc_int
     #define VIP_ENCUINT         enc_uint32
