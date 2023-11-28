@@ -34,7 +34,6 @@ bit128_t aes128_encrypt_128(bit128_t plaintext) {
     if (!encrypt_used) {
         fprintf(stderr, "aes128_encrypt_128\n");
     }
-    // Use gdb to find out where this is called from
     
     encrypt_used = true;
     unsigned char ct[AES128_BLOCKLEN] = {0};
