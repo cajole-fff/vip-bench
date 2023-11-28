@@ -158,13 +158,4 @@ void save_public_key(EVP_PKEY *pkey, const char *filename) {
     fclose(fp);
 }
 
-// // Just for test
-// int main () {
-//     EVP_PKEY* pkey = generate_rsa_key();
-//     std::cout << "pkey: " << pkey << std::endl;
-//     save_private_key(pkey, "private_key.pem");
-//     save_public_key(pkey, "public_key.pem");
-//     return 0;
-// }
-
 #endif // _RSA_OPENSSL_INTERFACE_CPP
