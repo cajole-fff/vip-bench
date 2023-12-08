@@ -1,5 +1,6 @@
 # VIP-Bench Benchmark Suite - RSA / Key Exchange Extension
 Implemented by: Fan Zhang, Peter Zhong ({zff, hpzhong} @umich.edu)
+
 Based on the VIP-Bench: https://github.com/toddmaustin/vip-bench
 
 ## Introduction
