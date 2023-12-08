@@ -1,5 +1,6 @@
 # VIP-Bench Benchmark Suite - RSA / Key Exchange Extension
-Authors: Fan Zhang, Peter Zhong ({zff, hpzhong} @umich.edu)
+Implemented by: Fan Zhang, Peter Zhong ({zff, hpzhong} @umich.edu)
+Based on the VIP-Bench: https://github.com/toddmaustin/vip-bench
 
 ## Introduction
 This repository implements the VIP-bench support for key exchange protocol targeting the Sequestered Encryption (SE) architecture, which allows the user to define a symmetric key to be used by the SE unit to interpret and directly process the ciphertext data sent in by the user. 
